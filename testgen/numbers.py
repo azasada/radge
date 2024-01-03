@@ -1,0 +1,3 @@
+"""
+Generate primes, antiprimes, Fibonacci numbers, ...
+"""
