@@ -3,7 +3,9 @@ Generate graphs with various properties, including trees.
 """
 
 import random
-from typing import Callable
+import math
+from types import ClassMethodDescriptorType
+from typing import Callable, ClassVar
 from collections import defaultdict
 import unittest
 
@@ -43,25 +45,103 @@ class Tree:
             u, v = v, u
         self.edges[(u, v, self.weight_func())] += 1
 
-# TODO: remove some leaves, sometimes
+
+class RandomTree(Tree):
+    def __init__(self, n: int, **kwargs):
+        """Initialize a random tree using a Pruefer code."""
+        super().__init__(n, **kwargs)
+        if n == 1:
+            return
+        code = [random.randint(0, n - 1) for _ in range(n - 2)]
+        deg = [1] * n
+        for v in code:
+            deg[v] += 1
+        ptr = 0
+        while deg[ptr] != 1:
+            ptr += 1
+        leaf = ptr
+
+        for v in code:
+            self.add_edge(leaf + 1, v + 1)
+            deg[v] -= 1
+            if deg[v] == 1 and v < ptr:
+                leaf = v
+            else:
+                ptr += 1
+                while deg[ptr] != 1:
+                    ptr += 1
+                leaf = ptr
+        self.add_edge(leaf + 1, n)
+
+
+class CaterpillarTree(Tree):
+    def __init__(self, n: int, **kwargs):
+        """Initialize a caterpillar tree - a long trunk with small branches connected to it."""
+        super().__init__(n, **kwargs)
+        trunk = random.randint(self.n // 2, self.n)
+        for i in range(2, trunk + 1):
+            self.add_edge(i, i - 1)
+        for i in range(trunk + 1, self.n + 1):
+            self.add_edge(i, random.randint(1, trunk))
+
+
+class StarTree(Tree):
+    def __init__(self, n: int, **kwargs):
+        """Initialize a star tree - a couple of centers with all other nodes connected to them."""
+        super().__init__(n, **kwargs)
+        centers = random.randint(1, min(4, self.n))
+        for i in range(2, centers + 1):
+            self.add_edge(i, i - 1)
+        for i in range(centers + 1, self.n + 1):
+            self.add_edge(i, random.randint(1, centers))
+
+
+class CombTree(Tree):
+    def __init__(self, n: int, **kwargs):
+        """Initialize a comb tree - a trunk with O(sqrt(n)) nodes, each one with an O(sqrt(n))-long branch."""
+        def circa_root(n: int) -> int:
+            return int(math.sqrt(n)) + random.randint(-max(n - 1, 4), max(n - 1, 4))
+
+        super().__init__(n, **kwargs)
+        trunk = circa_root(self.n)
+        for i in range(2, trunk + 1):
+            self.add_edge(i, i - 1)
+        node = trunk + 1
+        for v in range(1, trunk + 1):
+            branch = circa_root(self.n)
+            # TODO: finish this
+
+
 class BinaryTree(Tree):
-    def __init__(self, n: int, weighted: bool = False, weight_func: Callable[[], int] = lambda: 1):
-        """Initialize a binary tree."""
-        super().__init__(n, weighted, weight_func)
+    def __init__(self, n: int, **kwargs):
+        """Initialize a binary tree - O(log n) depth."""
+        super().__init__(n, **kwargs)
         for i in range(2, self.n + 1):
             self.add_edge(i, i // 2)
 
 
 class TestTreeGeneration(unittest.TestCase):
-    def test_binary_tree(self):
-        n = random.randint(7, 7)
-        tree = BinaryTree(n)
-        print(tree)
-        deg = [0 for _ in range(tree.n + 1)]
-        for (u, v, _) in tree.edges.keys():
-            deg[u] += 1
-            deg[v] += 1
-        self.assertTrue(all(d <= 3 for d in deg))
+    def test_is_tree(self):
+        TESTS = 100
+        MAX_N = 200
+        generator = random.sample([RandomTree, CaterpillarTree, StarTree, BinaryTree], counts = [70, 10, 10, 10], k = TESTS)
+
+        for i in range(TESTS):
+            n = random.randint(1, MAX_N)
+            tree = generator[i](n)
+            # print(tree)
+
+            # tree = connected graph with n vertices and n - 1 edges
+            vis = [False] * (n + 1)
+            q = [1]
+            while len(q) > 0:
+                u = q.pop()
+                vis[u] = True
+                for v in range(1, n + 1):
+                    if (u * (u < v) + v * (v < u), v * (u < v) + u * (v < u), 1) in tree.edges.keys() and not vis[v]:
+                        q.append(v)
+            self.assertTrue(tree.n == n and len(tree.edges)
+                            == n - 1 and all(vis[1:]))
 
 
 if __name__ == "__main__":
