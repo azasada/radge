@@ -1,3 +1,3 @@
-# TestGen
+# Radge - random algorithmic data generator
 
-This is just a temporary name
+work in progress
