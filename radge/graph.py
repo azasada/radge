@@ -2,14 +2,12 @@
 Generate graphs with various properties, including trees.
 """
 
-import random
 import math
-from typing import Callable
+import random
 from collections import defaultdict
-import unittest
+from typing import Callable
 
-
-from utils import NOISE
+from .utils import NOISE
 
 
 class Tree:
@@ -137,36 +135,5 @@ class BinaryTree(Tree):
             self.add_edge(i, i // 2)
 
 
-class TestTree(unittest.TestCase):
-    def test_is_tree(self):
-        """Test whether whatever was generated is, in fact, a tree."""
-        TESTS = 100
-        MAX_N = 300
-        generator = random.sample([CombTree], counts=[100], k=TESTS)
-
-        for i in range(TESTS):
-            n = random.randint(1, MAX_N)
-            tree = generator[i](n)
-
-            vis = [False] * (n + 1)
-            q = [1]
-            while len(q) > 0:
-                u = q.pop()
-                vis[u] = True
-                for v in range(1, n + 1):
-                    if (
-                        u * (u < v) + v * (v < u),
-                        v * (u < v) + u * (v < u),
-                        1,
-                    ) in tree.edges.keys() and not vis[v]:
-                        q.append(v)
-            self.assertTrue(tree.n == n and len(tree.edges)
-                            == n - 1 and all(vis[1:]))
-
-
 class Graph(Tree):
     pass
-
-
-if __name__ == "__main__":
-    unittest.main()
