@@ -24,7 +24,6 @@ class TestTree(unittest.TestCase):
                     if (
                         u * (u < v) + v * (v < u),
                         v * (u < v) + u * (v < u),
-                        1,
                     ) in tree.edges.keys() and not vis[v]:
                         q.append(v)
             self.assertTrue(tree.n == n and len(tree.edges)
@@ -32,4 +31,4 @@ class TestTree(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(failfast=True)
