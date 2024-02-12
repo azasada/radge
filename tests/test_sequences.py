@@ -24,5 +24,5 @@ class TestSequence(unittest.TestCase):
             self.assertEqual(sorted(perm(n)), list(range(1, n + 1)))
 
 
-if __name__ == '__main__':
-    unittest.main()
+if __name__ == "__main__":
+    unittest.main(failfast=True)

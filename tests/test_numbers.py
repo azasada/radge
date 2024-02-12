@@ -16,5 +16,5 @@ class TestNumbers(unittest.TestCase):
                 all(p % i != 0 for i in range(2, math.isqrt(p) + 1)))
 
 
-if __name__ == '__main__':
-    unittest.main()
+if __name__ == "__main__":
+    unittest.main(failfast=True)
