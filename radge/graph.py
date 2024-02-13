@@ -4,175 +4,169 @@ Generate graphs with various properties, including trees.
 
 import math
 import random
-from collections import defaultdict
-from typing import Callable
+from sre_constants import GROUPREF
+from typing import Callable, Optional
 
 from .utils import NOISE
 
 
-class Tree:
-    """Connected graph with no cycles."""
+class Edge:
+    """Edge between two vertices."""
 
-    def __init__(self, n: int, weighted: bool = False, weight_func: Callable[[], int] = lambda: 1):
-        self.n = n
-        self.weighted = weighted
-        self.weight_func = weight_func
-
-        self.edges = defaultdict(int)
-        self.weights = {}
-        self.perm = list(range(1, n + 1))
-        random.shuffle(self.perm)
-        self.perm = [0] + self.perm
+    def __init__(self, u: int, v: int, w: Optional[int] = None):
+        self.u = u
+        self.v = v
+        self.w = w
 
     def __str__(self) -> str:
-        """Return the tree as a string.
-        First line: n
-        Next n-1 lines: edges
-        """
-        edges = list(self.edges.keys())
-        random.shuffle(edges)
-
-        ret_str = f"{self.n}"
-        for u, v in edges:
-            coin = random.randint(0, 1)
-            ret_str += f"\n{self.perm[u * coin + v * (1 - coin)]} {self.perm[u * (1 - coin) + v * coin]}"
-            if self.weighted:
-                ret_str += f" {self.weights[(u, v)]}"
-        return ret_str
-
-    def add_edge(self, u: int, v: int):
-        # edges are always pairs (u, v) with u <= v
-        if u > v:
-            u, v = v, u
-        self.edges[(u, v)] += 1
-        self.weights[(u, v)] = self.weight_func()
+        """Return the edge as a string."""
+        return f"{self.u} {self.v}" + (f" {self.w}" if self.w else "")
 
 
-class RandomTree(Tree):
-    """Tree generated using a random Pruefer code."""
+class Graph:
+    """Vertices connected by edges."""
 
-    def __init__(self, n: int, **kwargs):
-        super().__init__(n, **kwargs)
-        if self.n == 1:
-            return
-        code = [random.randint(0, self.n - 1) for _ in range(self.n - 2)]
-        deg = [1] * self.n
-        for v in code:
-            deg[v] += 1
-        ptr = 0
-        while deg[ptr] != 1:
-            ptr += 1
-        leaf = ptr
-
-        for v in code:
-            self.add_edge(leaf + 1, v + 1)
-            deg[v] -= 1
-            if deg[v] == 1 and v < ptr:
-                leaf = v
-            else:
-                ptr += 1
-                while deg[ptr] != 1:
-                    ptr += 1
-                leaf = ptr
-        self.add_edge(leaf + 1, self.n)
-
-
-class CaterpillarTree(Tree):
-    """Long trunk with small branches connected to it."""
-
-    def __init__(self, n: int, **kwargs):
-        super().__init__(n, **kwargs)
-        trunk_len = random.randint(self.n // 2, self.n)
-        for i in range(2, trunk_len + 1):
-            self.add_edge(i, i - 1)
-        for i in range(trunk_len + 1, self.n + 1):
-            self.add_edge(i, random.randint(1, trunk_len))
-
-
-class StarTree(Tree):
-    """Small number of centers with all other nodes connected to them."""
-
-    def __init__(self, n: int, **kwargs):
-        super().__init__(n, **kwargs)
-        centers = random.randint(1, min(self.n, NOISE))
-        for i in range(2, centers + 1):
-            self.add_edge(i, i - 1)
-        for i in range(centers + 1, self.n + 1):
-            self.add_edge(i, random.randint(1, centers))
-
-
-class CombTree(Tree):
-    """Trunk with ~sqrt(n) nodes, each one with an ~sqrt(n)-long branch."""
-
-    def __init__(self, n: int, **kwargs):
-
-        def approx_sqrt(n: int) -> int:
-            s = int(math.sqrt(n))
-            if s > NOISE and s < n - NOISE:
-                return s + random.randint(-NOISE, NOISE)
-            return s
-
-        super().__init__(n, **kwargs)
-        trunk_len = approx_sqrt(self.n)
-        for i in range(2, trunk_len + 1):
-            self.add_edge(i, i - 1)
-        new_node, branch_node, branch_len = trunk_len + 1, 1, 0
-        while new_node <= self.n:
-            if branch_len == approx_sqrt(self.n) and branch_node < trunk_len:
-                branch_node += 1
-                branch_len = 0
-            if branch_len == 0:
-                self.add_edge(branch_node, new_node)
-            else:
-                self.add_edge(new_node - 1, new_node)
-            new_node += 1
-            branch_len += 1
-
-
-class BinaryTree(Tree):
-    """Tree with depth ~log n."""
-
-    def __init__(self, n: int, **kwargs):
-        super().__init__(n, **kwargs)
-        for i in range(2, self.n + 1):
-            self.add_edge(i, i // 2)
-
-
-class Graph(Tree):
-    """Set of nodes connected by edges."""
-
-    def __init__(self, n: int, m: int, directed: bool = False, acyclic: bool = False, connected: bool = False, self_loops: bool = False, **kwargs):
-        """Initialize a graph.
-        n - number of nodes
-        m - number of edges
-        directed, acyclic, connected, self_loops - parameters (true/false)
-        """
-        super().__init__(n, **kwargs)
-        self.m = m
+    def __init__(self, vertex_cnt: int, weight_func: Optional[Callable[[], int]] = None, directed: bool = False, multi_edges: bool = False, self_loops: bool = False):
+        """Initialize a graph."""
+        self.vertex_cnt = vertex_cnt
+        self.weight_func = weight_func
         self.directed = directed
-        self.acyclic = acyclic
-        self.connected = connected
+        self.multi_edges = multi_edges
         self.self_loops = self_loops
 
-    def __str__(self) -> str:
-        """Return the graph as a string.
-        First line: n, m
-        Next m lines: edges
-        """
-        edges = list(self.edges.keys())
-        random.shuffle(edges)
+        self.edge_cnt = 0
+        self.edges = [[] for _ in range(vertex_cnt + 1)]
+        perm = list(range(1, vertex_cnt + 1))
+        random.shuffle(perm)
+        self.perm = [0] + perm
 
-        ret_str = f"{self.n} {self.m}"
-        for u, v in edges:
-            ret_str += f"\n{self.perm[u]} {self.perm[v]}"
-            if self.weighted:
-                ret_str += f" {self.weights[(u, v)]}"
-        return ret_str
+    def permute_edge(self, edge: Edge) -> str:
+        """Return the edge with vertices permuted."""
+        split = str(edge).split()
+        coin = random.randint(0, 1) if not self.directed else 1
+        if not self.weight_func:
+            u, v = map(int, split)
+            return f"{coin * self.perm[u] + (1 - coin) * self.perm[v]} {(1 - coin) * self.perm[u] + coin * self.perm[v]}"
+        else:
+            u, v, w = map(int, split)
+            return f"{coin * self.perm[u] + (1 - coin) * self.perm[v]} {(1 - coin) * self.perm[u] + coin * self.perm[v]} {w}"
+
+    def __str__(self) -> str:
+        """Return the graph as a string (listing of edges, each in a separate line)."""
+        ret = []
+        for v in range(1, self.vertex_cnt + 1):
+            for edge in self.edges[v]:
+                # to avoid duplicates in undirected graphs
+                if self.directed or (not self.directed and edge.u <= edge.v):
+                    ret.append(self.permute_edge(edge))
+        random.shuffle(ret)
+
+        return "\n".join(ret)
 
     def add_edge(self, u: int, v: int):
-        self.edges[(u, v)] += 1
-        self.weights[(u, v)] = self.weight_func()
+        """Add an edge u-v (and v-u if the graph is undirected)."""
+        if not self.multi_edges:
+            for edge in self.edges[u]:
+                if edge.v == v:
+                    return
+        if not self.self_loops and u == v:
+            return
+        self.edge_cnt += 1
+        w = self.weight_func() if self.weight_func else None
+        self.edges[u].append(Edge(u, v, w))
+        if not self.directed:
+            self.edges[v].append(Edge(v, u, w))
 
 
-class RandomGraph(Graph):
-    pass
+def random_tree(vertex_cnt: int, weight_func: Optional[Callable[[], int]] = None) -> Graph:
+    """Return a random tree (connected acyclic graph) with vertex_cnt vertices. Generated using a Pruefer code."""
+    tree = Graph(vertex_cnt, weight_func=weight_func)
+    if vertex_cnt == 1:
+        return tree
+    code = [random.randint(0, vertex_cnt - 1) for _ in range(vertex_cnt - 2)]
+    deg = [1] * (vertex_cnt + 1)
+    for v in code:
+        deg[v] += 1
+    ptr = 0
+    while deg[ptr] != 1:
+        ptr += 1
+    leaf = ptr
+
+    for v in code:
+        tree.add_edge(leaf + 1, v + 1)
+        deg[v] -= 1
+        if deg[v] == 1 and v < ptr:
+            leaf = v
+        else:
+            ptr += 1
+            while deg[ptr] != 1:
+                ptr += 1
+            leaf = ptr
+    tree.add_edge(leaf + 1, vertex_cnt)
+    return tree
+
+
+def binary_tree(vertex_cnt: int, weight_func: Optional[Callable[[], int]] = None) -> Graph:
+    """Return a full binary tree with vertex_cnt vertices."""
+    tree = Graph(vertex_cnt, weight_func=weight_func)
+    for i in range(2, vertex_cnt + 1):
+        tree.add_edge(i // 2, i)
+    return tree
+
+
+def caterpillar_tree(vertex_cnt: int, weight_func: Optional[Callable[[], int]] = None) -> Graph:
+    """Return a caterpillar tree with vertex_cnt vertices."""
+    tree = Graph(vertex_cnt, weight_func=weight_func)
+    if vertex_cnt == 1:
+        return tree
+    trunk_len = random.randint(vertex_cnt // 2, vertex_cnt)
+    for i in range(2, trunk_len + 1):
+        tree.add_edge(i, i - 1)
+    for i in range(trunk_len + 1, vertex_cnt + 1):
+        tree.add_edge(i, random.randint(1, trunk_len))
+    return tree
+
+
+def star_path_tree(vertex_cnt: int, star_cnt: int, weight_func: Optional[Callable[[], int]] = None) -> Graph:
+    """Return a star-path tree (high-degree vertices (stars) separated by paths) with vertex_cnt vertices, out of which star_cnt are stars."""
+    if star_cnt > vertex_cnt:
+        raise ValueError("star_cnt must not be more than vertex_cnt")
+    tree = Graph(vertex_cnt, weight_func=weight_func)
+
+    for i in range(2, star_cnt + 1):  # connect stars into a path
+        tree.add_edge(i, i - 1)
+    per_star = (vertex_cnt - star_cnt) // star_cnt
+    for i in range(1, star_cnt + 1):
+        for j in range(1, per_star + 1):  # add vertices to stars
+            tree.add_edge(i, star_cnt + (i - 1) * per_star + j)
+    # add remaining vertices to random stars
+    for i in range(star_cnt + per_star * star_cnt + 1, vertex_cnt + 1):
+        tree.add_edge(i, random.randint(1, star_cnt))
+
+    return tree
+
+
+def comb_tree(vertex_cnt: int, weight_func: Optional[Callable[[], int]] = None) -> Graph:
+    """Return a 'comb' tree (trunk with ~sqrt(n) vertices, of which each one has a ~sqrt(n)-long branch) with vertex_cnt vertices."""
+    def approx_sqrt(n: int) -> int:
+        s = int(math.sqrt(n))
+        if s > NOISE and s < n - NOISE:
+            return s + random.randint(-NOISE, NOISE)
+        return s
+
+    tree = Graph(vertex_cnt, weight_func=weight_func)
+    trunk_len = approx_sqrt(vertex_cnt)
+    for i in range(2, trunk_len + 1):
+        tree.add_edge(i, i - 1)
+    new_node, branch_node, branch_len = trunk_len + 1, 1, 0
+    while new_node <= vertex_cnt:
+        if branch_len == approx_sqrt(vertex_cnt) and branch_node < trunk_len:
+            branch_node += 1
+            branch_len = 0
+        if branch_len == 0:
+            tree.add_edge(branch_node, new_node)
+        else:
+            tree.add_edge(new_node - 1, new_node)
+        new_node += 1
+        branch_len += 1
+    return tree
