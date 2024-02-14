@@ -1,3 +1,3 @@
 # Radge - random algorithmic data generator
 
-work in progress
+work in progress for now
