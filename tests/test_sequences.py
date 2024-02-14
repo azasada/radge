@@ -6,12 +6,14 @@ from radge.sequences import *
 
 class TestSequence(unittest.TestCase):
     def test_seq(self):
+        """Test if the elements of the generated sequence are contained in the original one."""
         for _ in range(100):
             n = random.randint(1, 100)
             a = range(1_000_000_000)
             self.assertTrue(all(x in a for x in seq(n, a)))
 
     def test_seq_unique(self):
+        """Test if the elements of the generated sequence are unique."""
         for _ in range(100):
             n = random.randint(1, 100)
             a = range(1_000_000_000)
@@ -19,6 +21,7 @@ class TestSequence(unittest.TestCase):
         self.assertRaises(IndexError, seq_unique, 100, range(10))
 
     def test_perm(self):
+        """Test if the generated seuqence is a permutation."""
         for _ in range(100):
             n = random.randint(1, 100_000)
             self.assertEqual(sorted(perm(n)), list(range(1, n + 1)))

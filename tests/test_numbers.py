@@ -6,6 +6,7 @@ from radge.numbers import *
 
 class TestNumbers(unittest.TestCase):
     def test_random_prime(self):
+        """Test if the generated number is a prime."""
         max_n = 1_000_000_000
         num_gen = Numbers(max_n)
         for _ in range(1_000):

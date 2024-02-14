@@ -4,7 +4,6 @@ Generate graphs with various properties, including trees.
 
 import math
 import random
-from sre_constants import GROUPREF
 from typing import Callable, Optional
 
 from .utils import NOISE
@@ -26,13 +25,11 @@ class Edge:
 class Graph:
     """Vertices connected by edges."""
 
-    def __init__(self, vertex_cnt: int, weight_func: Optional[Callable[[], int]] = None, directed: bool = False, multi_edges: bool = False, self_loops: bool = False):
+    def __init__(self, vertex_cnt: int, weight_func: Optional[Callable[[], int]] = None, directed: bool = False):
         """Initialize a graph."""
         self.vertex_cnt = vertex_cnt
         self.weight_func = weight_func
         self.directed = directed
-        self.multi_edges = multi_edges
-        self.self_loops = self_loops
 
         self.edge_cnt = 0
         self.edges = [[] for _ in range(vertex_cnt + 1)]
@@ -65,12 +62,6 @@ class Graph:
 
     def add_edge(self, u: int, v: int):
         """Add an edge u-v (and v-u if the graph is undirected)."""
-        if not self.multi_edges:
-            for edge in self.edges[u]:
-                if edge.v == v:
-                    return
-        if not self.self_loops and u == v:
-            return
         self.edge_cnt += 1
         w = self.weight_func() if self.weight_func else None
         self.edges[u].append(Edge(u, v, w))
@@ -103,6 +94,7 @@ def random_tree(vertex_cnt: int, weight_func: Optional[Callable[[], int]] = None
                 ptr += 1
             leaf = ptr
     tree.add_edge(leaf + 1, vertex_cnt)
+
     return tree
 
 
@@ -111,6 +103,7 @@ def binary_tree(vertex_cnt: int, weight_func: Optional[Callable[[], int]] = None
     tree = Graph(vertex_cnt, weight_func=weight_func)
     for i in range(2, vertex_cnt + 1):
         tree.add_edge(i // 2, i)
+
     return tree
 
 
@@ -124,6 +117,7 @@ def caterpillar_tree(vertex_cnt: int, weight_func: Optional[Callable[[], int]] =
         tree.add_edge(i, i - 1)
     for i in range(trunk_len + 1, vertex_cnt + 1):
         tree.add_edge(i, random.randint(1, trunk_len))
+
     return tree
 
 
@@ -152,6 +146,7 @@ def comb_tree(vertex_cnt: int, weight_func: Optional[Callable[[], int]] = None) 
         s = int(math.sqrt(n))
         if s > NOISE and s < n - NOISE:
             return s + random.randint(-NOISE, NOISE)
+
         return s
 
     tree = Graph(vertex_cnt, weight_func=weight_func)
@@ -169,4 +164,67 @@ def comb_tree(vertex_cnt: int, weight_func: Optional[Callable[[], int]] = None) 
             tree.add_edge(new_node - 1, new_node)
         new_node += 1
         branch_len += 1
+
     return tree
+
+
+def random_graph(vertex_cnt: int, edge_cnt: int, weight_func: Optional[Callable[[], int]] = None, directed: bool = False, connected: bool = False, multi_edges: bool = False, self_loops: bool = False) -> Graph:
+    """Return a random graph with vertex_cnt vertices and edge_cnt edges."""
+    if edge_cnt > vertex_cnt * (vertex_cnt - 1) // 2:
+        raise ValueError(
+            "edge_cnt must not be more than vertex_cnt * (vertex_cnt - 1) // 2")
+    if edge_cnt < vertex_cnt - 1 and connected:
+        raise ValueError(
+            "edge_cnt must be at least vertex_cnt - 1 if the graph is to be connected.")
+    graph = Graph(vertex_cnt, weight_func=weight_func, directed=directed)
+    edges_set = set()
+    cnt = 0
+    if connected: # this won't necessarily make an undirected graph connected
+        tree = random_tree(vertex_cnt, weight_func=weight_func)
+        graph.perm = tree.perm
+        graph.edges = tree.edges
+        graph.edge_cnt = tree.edge_cnt
+        cnt = graph.edge_cnt
+        for i in range(1, vertex_cnt + 1):
+            for edge in graph.edges[i]:
+                edges_set.add((edge.u, edge.v))
+                if not directed:
+                    edges_set.add((edge.v, edge.u))
+
+    while cnt < edge_cnt:
+        u, v = random.randint(1, vertex_cnt), random.randint(1, vertex_cnt)
+        if (u == v and not self_loops) or ((u, v) in edges_set and not multi_edges):
+            continue  # try again, because this edge is invalid
+        graph.add_edge(u, v)
+
+        cnt += 1
+        if not multi_edges:  # if there are mutliedges then we don't care about the set
+            edges_set.add((u, v))
+            if not directed:
+                edges_set.add((v, u))
+
+    return graph
+
+
+def dag(vertex_cnt: int, edge_cnt: int, weight_func: Optional[Callable[[], int]] = None,  multi_edges: bool = False) -> Graph:
+    """Return a random directed acyclic graph with vertex_cnt vertices and edge_cnt edges."""
+    if edge_cnt > vertex_cnt * (vertex_cnt - 1) // 2:
+        raise ValueError(
+            "edge_cnt must not be more than vertex_cnt * (vertex_cnt - 1) // 2")
+    graph = Graph(vertex_cnt, weight_func=weight_func,
+                  directed=True)
+    edges_set = set()
+    cnt = 0
+
+    while cnt < edge_cnt:
+        # we assume that 1, 2, .., vertex_cnt is the topological order
+        u = random.randint(1, vertex_cnt - 1)
+        v = random.randint(u + 1, vertex_cnt)
+        if (u, v) in edges_set and not multi_edges:
+            continue
+        graph.add_edge(u, v)
+
+        cnt += 1
+        if not multi_edges:  # if there are mutliedges then we don't care about the set
+            edges_set.add((u, v))
+    return graph
