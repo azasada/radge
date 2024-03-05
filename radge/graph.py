@@ -179,7 +179,7 @@ def random_graph(vertex_cnt: int, edge_cnt: int, weight_func: Optional[Callable[
     graph = Graph(vertex_cnt, weight_func=weight_func, directed=directed)
     edges_set = set()
     cnt = 0
-    if connected: # this won't necessarily make an undirected graph connected
+    if connected:
         tree = random_tree(vertex_cnt, weight_func=weight_func)
         graph.perm = tree.perm
         graph.edges = tree.edges
