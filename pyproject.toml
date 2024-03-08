@@ -1,4 +1,15 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "radge"
-authors = { name = "Antoni Zasada" }
+version = "1.0.0"
+authors = [{name = "Antoni Zasada", email = "zsd.antoni@gmail.com" }]
 requires-python = ">=3.8"
+readme = "README.md"
+description = "A random algorithmic data generator"
+
+[project-urls]
+Homepage = "https://github.com/azasada/radge"
+Issues = "https://github.com/azasada/radge/issues"
