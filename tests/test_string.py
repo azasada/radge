@@ -7,6 +7,7 @@ from radge.utils import ALPHA_LOWER
 MAX_N = 100
 MAX_LEN = 1000
 
+
 class TestString(unittest.TestCase):
     def test_random_string(self):
         """Test if the generated string comes from the given alphabet."""
@@ -28,7 +29,7 @@ class TestString(unittest.TestCase):
 
                 ok = False
                 for i in range(n - l + 1):
-                    if s.s[i:(i + l)] == sub:
+                    if s.s[i : (i + l)] == sub:
                         ok = True
                 self.assertTrue(ok)
 

@@ -6,6 +6,7 @@ import random
 
 from .utils import ALPHA_LOWER, ALPHA_UPPER
 
+
 class String:
     """A string made using letters from the given alphabet."""
 
@@ -21,13 +22,17 @@ class String:
     def substr(self, len: int) -> str:
         """Return a random substring of given length."""
         if len > self.len:
-            raise ValueError("Length of a substring cannot be greater than the length of the string.")
+            raise ValueError(
+                "Length of a substring cannot be greater than the length of the string."
+            )
         r = random.randint(len - 1, self.len - 1)
-        return self.s[(r - len + 1):(r + 1)]
+        return self.s[(r - len + 1) : (r + 1)]
 
     def subseq(self, len: int) -> str:
         """Return a random subsequence of given length."""
         if len > self.len:
-            raise ValueError("Length of a subsequence cannot be greater than the length of the string.")
+            raise ValueError(
+                "Length of a subsequence cannot be greater than the length of the string."
+            )
         pos = sorted(random.sample(range(self.len), len))
         return "".join(self.s[i] for i in pos)

@@ -70,8 +70,6 @@ class TestTree(unittest.TestCase):
             edge_cnt = random.randint(
                 vertex_cnt - 1, vertex_cnt * (vertex_cnt - 1) // 2)
             graph = random_graph(vertex_cnt, edge_cnt, connected=True)
-            print(f"\n{graph.vertex_cnt} {graph.edge_cnt}")
-            print(graph)
 
             vis = [False] * (graph.vertex_cnt + 1)
 
