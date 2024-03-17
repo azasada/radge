@@ -14,7 +14,8 @@ class Numbers:
         self.max_n = max_n
 
     def random_prime(self) -> int:
-        """Generate a random prime number less than max_n using the Miller-Rabin primality test."""
+        """Generate a random prime number not greater than max_n using the Miller-Rabin primality test."""
+
         def mpow(a: int, b: int, m: int) -> int:
             """Modular exponentiation."""
             res = 1
@@ -28,6 +29,7 @@ class Numbers:
 
         def miller_rabin(n: int) -> bool:
             """Miller-Rabin primality test."""
+
             def is_composite(n: int, a: int, q: int, s: int) -> bool:
                 x = mpow(a, q, n)
                 if x == 1 or x == n - 1:

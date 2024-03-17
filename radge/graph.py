@@ -25,7 +25,12 @@ class Edge:
 class Graph:
     """Vertices connected by edges."""
 
-    def __init__(self, vertex_cnt: int, weight_func: Optional[Callable[[], int]] = None, directed: bool = False):
+    def __init__(
+        self,
+        vertex_cnt: int,
+        weight_func: Optional[Callable[[], int]] = None,
+        directed: bool = False,
+    ):
         """Initialize a graph."""
         self.vertex_cnt = vertex_cnt
         self.weight_func = weight_func
@@ -69,8 +74,10 @@ class Graph:
             self.edges[v].append(Edge(v, u, w))
 
 
-def random_tree(vertex_cnt: int, weight_func: Optional[Callable[[], int]] = None) -> Graph:
-    """Return a random tree (connected acyclic graph) with vertex_cnt vertices. Generated using a Pruefer code."""
+def random_tree(
+    vertex_cnt: int, weight_func: Optional[Callable[[], int]] = None
+) -> Graph:
+    """Return a random tree with vertex_cnt vertices."""
     tree = Graph(vertex_cnt, weight_func=weight_func)
     if vertex_cnt == 1:
         return tree
@@ -98,7 +105,9 @@ def random_tree(vertex_cnt: int, weight_func: Optional[Callable[[], int]] = None
     return tree
 
 
-def binary_tree(vertex_cnt: int, weight_func: Optional[Callable[[], int]] = None) -> Graph:
+def binary_tree(
+    vertex_cnt: int, weight_func: Optional[Callable[[], int]] = None
+) -> Graph:
     """Return a full binary tree with vertex_cnt vertices."""
     tree = Graph(vertex_cnt, weight_func=weight_func)
     for i in range(2, vertex_cnt + 1):
@@ -107,7 +116,9 @@ def binary_tree(vertex_cnt: int, weight_func: Optional[Callable[[], int]] = None
     return tree
 
 
-def caterpillar_tree(vertex_cnt: int, weight_func: Optional[Callable[[], int]] = None) -> Graph:
+def caterpillar_tree(
+    vertex_cnt: int, weight_func: Optional[Callable[[], int]] = None
+) -> Graph:
     """Return a caterpillar tree with vertex_cnt vertices."""
     tree = Graph(vertex_cnt, weight_func=weight_func)
     if vertex_cnt == 1:
@@ -121,7 +132,9 @@ def caterpillar_tree(vertex_cnt: int, weight_func: Optional[Callable[[], int]] =
     return tree
 
 
-def star_path_tree(vertex_cnt: int, star_cnt: int, weight_func: Optional[Callable[[], int]] = None) -> Graph:
+def star_path_tree(
+    vertex_cnt: int, star_cnt: int, weight_func: Optional[Callable[[], int]] = None
+) -> Graph:
     """Return a star-path tree (high-degree vertices (stars) separated by paths) with vertex_cnt vertices, out of which star_cnt are stars."""
     if star_cnt > vertex_cnt:
         raise ValueError("star_cnt must not be more than vertex_cnt")
@@ -140,8 +153,11 @@ def star_path_tree(vertex_cnt: int, star_cnt: int, weight_func: Optional[Callabl
     return tree
 
 
-def comb_tree(vertex_cnt: int, weight_func: Optional[Callable[[], int]] = None) -> Graph:
+def comb_tree(
+    vertex_cnt: int, weight_func: Optional[Callable[[], int]] = None
+) -> Graph:
     """Return a 'comb' tree (trunk with ~sqrt(n) vertices, of which each one has a ~sqrt(n)-long branch) with vertex_cnt vertices."""
+
     def approx_sqrt(n: int) -> int:
         s = int(math.sqrt(n))
         if s > NOISE and s < n - NOISE:
@@ -168,14 +184,24 @@ def comb_tree(vertex_cnt: int, weight_func: Optional[Callable[[], int]] = None) 
     return tree
 
 
-def random_graph(vertex_cnt: int, edge_cnt: int, weight_func: Optional[Callable[[], int]] = None, directed: bool = False, connected: bool = False, multi_edges: bool = False, self_loops: bool = False) -> Graph:
+def random_graph(
+    vertex_cnt: int,
+    edge_cnt: int,
+    weight_func: Optional[Callable[[], int]] = None,
+    directed: bool = False,
+    connected: bool = False,
+    multi_edges: bool = False,
+    self_loops: bool = False,
+) -> Graph:
     """Return a random graph with vertex_cnt vertices and edge_cnt edges."""
     if edge_cnt > vertex_cnt * (vertex_cnt - 1) // 2:
         raise ValueError(
-            "edge_cnt must not be more than vertex_cnt * (vertex_cnt - 1) // 2")
+            "edge_cnt must not be more than vertex_cnt * (vertex_cnt - 1) / 2"
+        )
     if edge_cnt < vertex_cnt - 1 and connected:
         raise ValueError(
-            "edge_cnt must be at least vertex_cnt - 1 if the graph is to be connected.")
+            "edge_cnt must be at least vertex_cnt - 1 if the graph is to be connected."
+        )
     graph = Graph(vertex_cnt, weight_func=weight_func, directed=directed)
     edges_set = set()
     cnt = 0
@@ -206,13 +232,18 @@ def random_graph(vertex_cnt: int, edge_cnt: int, weight_func: Optional[Callable[
     return graph
 
 
-def dag(vertex_cnt: int, edge_cnt: int, weight_func: Optional[Callable[[], int]] = None,  multi_edges: bool = False) -> Graph:
+def dag(
+    vertex_cnt: int,
+    edge_cnt: int,
+    weight_func: Optional[Callable[[], int]] = None,
+    multi_edges: bool = False,
+) -> Graph:
     """Return a random directed acyclic graph with vertex_cnt vertices and edge_cnt edges."""
     if edge_cnt > vertex_cnt * (vertex_cnt - 1) // 2:
         raise ValueError(
-            "edge_cnt must not be more than vertex_cnt * (vertex_cnt - 1) // 2")
-    graph = Graph(vertex_cnt, weight_func=weight_func,
-                  directed=True)
+            "edge_cnt must not be more than vertex_cnt * (vertex_cnt - 1) / 2"
+        )
+    graph = Graph(vertex_cnt, weight_func=weight_func, directed=True)
     edges_set = set()
     cnt = 0
 

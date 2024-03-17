@@ -8,7 +8,7 @@ from .utils import ALPHA_LOWER, ALPHA_UPPER
 
 
 class String:
-    """A string made using letters from the given alphabet."""
+    """A string made using characters from the given alphabet."""
 
     def __init__(self, len: int, alpha: str = ALPHA_LOWER + ALPHA_UPPER):
         self.len = len

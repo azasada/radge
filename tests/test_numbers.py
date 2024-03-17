@@ -13,8 +13,7 @@ class TestNumbers(unittest.TestCase):
             p = num_gen.random_prime()
             self.assertTrue(p > 1)
             self.assertTrue(p < max_n)
-            self.assertTrue(
-                all(p % i != 0 for i in range(2, math.isqrt(p) + 1)))
+            self.assertTrue(all(p % i != 0 for i in range(2, math.isqrt(p) + 1)))
 
 
 if __name__ == "__main__":
