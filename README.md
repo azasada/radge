@@ -8,6 +8,6 @@ This simple library aims to facilitate creating testcases for and stress-testing
 - Generating prime numbers
 - Generating sequences and permutations, with unique entries or not, sorted in any order
 - Generating strings and their substrings
-- Generating convex polygons (*coming soon*)
+- Generating convex polygons
 
 If you have any suggestions regarding any improvements or bug fixes, feel free to create an issue.

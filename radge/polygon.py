@@ -49,11 +49,12 @@ class Vector:
         return math.atan2(self.y, self.x)
 
 
-def random_convex(n: int, max_coord: int = 60) -> List[Vector]:
+def random_convex(n: int, max_coord: int = 1000) -> List[Vector]:
     """Return a random convex polygon with n >= 3 vertices, such that none of its vertices have a coordinate bigger than max_coord."""
+    # note: degenerate polygons are possible (for example a "triangle" with 3 colinear points)
     if n < 3:
         raise ValueError("n must be at least 3")
-    max_r = random.randint(2, max_coord // n)
+    max_r = random.randint(2, 2 + max_coord // n)
 
     vecs = []
     cur = Vector(0, 0)
@@ -74,6 +75,5 @@ def random_convex(n: int, max_coord: int = 60) -> List[Vector]:
     for vec in vecs:
         points.append(points[-1] + vec)
     points.pop()
-    random.shuffle(points)
 
     return points
