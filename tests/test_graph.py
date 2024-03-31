@@ -11,7 +11,8 @@ class TestTree(unittest.TestCase):
         MAX_N = 500
         tree_generators = [random_tree, binary_tree,
                            caterpillar_tree, star_path_tree, comb_tree]
-        for _ in range(TESTS):
+        for i in range(TESTS):
+            random.seed(i)
             vertex_cnt = random.randint(1, MAX_N)
             generator = random.choice(tree_generators)
             if generator == star_path_tree:
@@ -38,7 +39,8 @@ class TestTree(unittest.TestCase):
         """Test if the generated graph is a directed acyclic graph."""
         TESTS = 100
         MAX_N = 500
-        for _ in range(TESTS):
+        for i in range(TESTS):
+            random.seed(i)
             vertex_cnt = random.randint(1, MAX_N)
             edge_cnt = random.randint(0, vertex_cnt * (vertex_cnt - 1) // 2)
             graph = dag(vertex_cnt, edge_cnt)
@@ -65,7 +67,8 @@ class TestTree(unittest.TestCase):
         """Tests if the generated graph is connected."""
         TESTS = 1
         MAX_N = 10
-        for _ in range(TESTS):
+        for i in range(TESTS):
+            random.seed(i)
             vertex_cnt = random.randint(1, MAX_N)
             edge_cnt = random.randint(
                 vertex_cnt - 1, vertex_cnt * (vertex_cnt - 1) // 2)

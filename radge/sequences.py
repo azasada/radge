@@ -7,7 +7,7 @@ from typing import Any, Callable, Optional
 
 
 def seq(n: int, a: range, key: Optional[Callable[[int], Any]] = None) -> list:
-    """Pick n random items from a range (possibly with repetitions).
+    """Pick n random items from range a (possibly with repetitions).
     Optionally sort the resulting sequence using the key(x) function
     (takes in x, and returns the value that x should be compared by)."""
     ret = [random.choice(a) for _ in range(n)]
@@ -18,7 +18,7 @@ def seq(n: int, a: range, key: Optional[Callable[[int], Any]] = None) -> list:
 
 
 def seq_unique(n: int, a: range, key: Optional[Callable[[int], Any]] = None) -> list:
-    """Pick n unique random items from a range.
+    """Pick n unique random items from range a.
     Optionally sort the resulting sequence using the key(x) function
     (takes in x, and returns the value that x should be compared by)."""
     if len(a) < n:
