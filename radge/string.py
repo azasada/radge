@@ -4,13 +4,14 @@ Generate various types of strings.
 
 import random
 
-from .utils import ALPHA_LOWER, ALPHA_UPPER
+import radge.utils as utils
 
 
 class String:
     """A string made using characters from the given alphabet."""
 
-    def __init__(self, len: int, alpha: str = ALPHA_LOWER + ALPHA_UPPER):
+    def __init__(self, len: int, alpha: str = utils.ALPHA_LOWER + utils.ALPHA_UPPER) -> None:
+        random.seed(utils.SEED)
         self.len = len
         self.alpha = alpha
         self.s = "".join(random.choice(alpha) for _ in range(len))

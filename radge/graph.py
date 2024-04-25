@@ -6,13 +6,12 @@ import math
 import random
 from typing import Callable, Optional
 
-from .utils import NOISE
-
+import radge.utils as utils
 
 class Edge:
     """Edge between two vertices."""
 
-    def __init__(self, u: int, v: int, w: Optional[int] = None):
+    def __init__(self, u: int, v: int, w: Optional[int] = None) -> None:
         self.u = u
         self.v = v
         self.w = w
@@ -30,7 +29,7 @@ class Graph:
         vertex_cnt: int,
         weight_func: Optional[Callable[[], int]] = None,
         directed: bool = False,
-    ):
+    ) -> None:
         """Initialize a graph."""
         self.vertex_cnt = vertex_cnt
         self.weight_func = weight_func
@@ -39,6 +38,7 @@ class Graph:
         self.edge_cnt = 0
         self.edges = [[] for _ in range(vertex_cnt + 1)]
         perm = list(range(1, vertex_cnt + 1))
+        random.seed(utils.SEED)
         random.shuffle(perm)
         self.perm = [0] + perm
 
@@ -65,7 +65,7 @@ class Graph:
 
         return "\n".join(ret)
 
-    def add_edge(self, u: int, v: int):
+    def add_edge(self, u: int, v: int) -> None:
         """Add an edge u-v (and v-u if the graph is undirected)."""
         self.edge_cnt += 1
         w = self.weight_func() if self.weight_func else None
@@ -160,8 +160,8 @@ def comb_tree(
 
     def approx_sqrt(n: int) -> int:
         s = int(math.sqrt(n))
-        if s > NOISE and s < n - NOISE:
-            return s + random.randint(-NOISE, NOISE)
+        if s > utils.NOISE and s < n - utils.NOISE:
+            return s + random.randint(-utils.NOISE, utils.NOISE)
 
         return s
 

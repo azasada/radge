@@ -6,8 +6,7 @@ import math
 import random
 from typing import List
 
-from .utils import PI, EXP, NOISE
-
+import radge.utils as utils
 
 class Vector:
     """Vector in the cartesian plane."""
@@ -48,12 +47,13 @@ class Vector:
         """Return the directed angle (in radians) that the vector makes with the X-axis."""
         return math.atan2(self.y, self.x)
 
-
+# TODO: change this to finding the convex hull of a random set of points.
 def random_convex(n: int, max_coord: int = 1000) -> List[Vector]:
     """Return a random convex polygon with n >= 3 vertices, such that none of its vertices have a coordinate bigger than max_coord."""
     # note: degenerate polygons are possible (for example a "triangle" with 3 colinear points)
     if n < 3:
         raise ValueError("n must be at least 3")
+    random.seed(utils.SEED)
     max_r = random.randint(2, 2 + max_coord // n)
 
     vecs = []
@@ -70,7 +70,7 @@ def random_convex(n: int, max_coord: int = 1000) -> List[Vector]:
     vecs.append(-cur)
     vecs.sort(key=lambda v: v.angle())
 
-    start = Vector(random.randint(-NOISE, NOISE), random.randint(-NOISE, NOISE))
+    start = Vector(random.randint(-utils.NOISE, utils.NOISE), random.randint(-utils.NOISE, utils.NOISE))
     points = [start]
     for vec in vecs:
         points.append(points[-1] + vec)
