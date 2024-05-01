@@ -4,10 +4,6 @@ import unittest
 from radge.polygon import *
 
 
-def is_convex_angle(v: Vector, w: Vector) -> bool:
-    return v.x * w.y - v.y * w.x >= 0
-
-
 class TestPolygon(unittest.TestCase):
     def test_convex(self):
         """Test if the generated polygon is convex."""
@@ -19,7 +15,13 @@ class TestPolygon(unittest.TestCase):
             n = random.randint(3, MAX_N)
             poly = random_convex(n)
             v = poly[1] - poly[0]
-            for i in range(2, n):
+            cross_products = []
+            for i in range(2, len(poly)):
                 w = poly[i] - poly[i - 1]
-                self.assertTrue(is_convex_angle(v, w))
+                cross_products.append(v.cross(w))
                 v = w
+            self.assertTrue(min(cross_products) * max(cross_products) >= 0)
+
+
+if __name__ == "__main__":
+    unittest.main(failfast=True)

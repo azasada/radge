@@ -3,6 +3,7 @@ import unittest
 import radge.utils as utils
 import radge.sequences as seq
 
+
 class TestSeed(unittest.TestCase):
     def test_is_same(self):
         """Test if a random sequence is the same if it's generated using the same seed twice."""
@@ -17,3 +18,6 @@ class TestSeed(unittest.TestCase):
 
             self.assertTrue(seq1 == seq2)
 
+
+if __name__ == "__main__":
+    unittest.main(failfast=True)

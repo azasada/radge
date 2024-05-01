@@ -2,11 +2,13 @@
 Generate convex polygons.
 """
 
+from __future__ import annotations
 import math
 import random
 from typing import List
 
 import radge.utils as utils
+
 
 class Vector:
     """Vector in the cartesian plane."""
@@ -14,6 +16,11 @@ class Vector:
     def __init__(self, x: int, y: int):
         self.x = x
         self.y = y
+
+    def __lt__(self, rhs):
+        if self.x == rhs.x:
+            return self.y < rhs.y
+        return self.x < rhs.x
 
     def __add__(self, rhs):
         return Vector(self.x + rhs.x, self.y + rhs.y)
@@ -43,37 +50,48 @@ class Vector:
         """Return the norm of the vector."""
         return math.sqrt(self.x**2 + self.y**2)
 
+    def dist(self, rhs: Vector) -> float:
+        """Return the (squared) distance between two points."""
+        return (self - rhs).norm()
+
     def angle(self) -> float:
         """Return the directed angle (in radians) that the vector makes with the X-axis."""
         return math.atan2(self.y, self.x)
 
-# TODO: change this to finding the convex hull of a random set of points.
-def random_convex(n: int, max_coord: int = 1000) -> List[Vector]:
-    """Return a random convex polygon with n >= 3 vertices, such that none of its vertices have a coordinate bigger than max_coord."""
-    # note: degenerate polygons are possible (for example a "triangle" with 3 colinear points)
-    if n < 3:
-        raise ValueError("n must be at least 3")
-    random.seed(utils.SEED)
-    max_r = random.randint(2, 2 + max_coord // n)
+    def cross(self, rhs: Vector) -> int:
+        """Return the magnitude of the 2D cross product."""
+        return self.x * rhs.y - rhs.x * self.y
 
-    vecs = []
-    cur = Vector(0, 0)
-    for _ in range(n - 1):
-        new_p = cur
-        while new_p == cur:
-            new_p = Vector(
-                random.randint(cur.x - max_r, cur.x + max_r),
-                random.randint(cur.y - max_r, cur.y + max_r),
-            )
-        vecs.append(new_p - cur)
-        cur = new_p
-    vecs.append(-cur)
-    vecs.sort(key=lambda v: v.angle())
+    def orient(self, a: Vector, b: Vector) -> int:
+        """Return neg/0/pos if this point is to the right/collinear/to the left of line ab."""
+        return (a - self).cross(b - self)
 
-    start = Vector(random.randint(-utils.NOISE, utils.NOISE), random.randint(-utils.NOISE, utils.NOISE))
-    points = [start]
-    for vec in vecs:
-        points.append(points[-1] + vec)
-    points.pop()
 
-    return points
+def random_convex(n: int) -> List[Vector]:
+    """Return a random convex polygon with 3 <= x <= n vertices. Vertices have integer coords."""
+    points = [
+        Vector(
+            random.randint(-utils.MAX_COORD, utils.MAX_COORD),
+            random.randint(-utils.MAX_COORD, utils.MAX_COORD),
+        )
+        for _ in range(n)
+    ]
+    if n <= 3:
+        return points
+    points.sort()
+
+    upper = []
+    for point in points:
+        while len(upper) >= 2 and upper[-2].orient(upper[-1], point) >= 0:
+            upper.pop()
+        upper.append(point)
+    upper.pop()
+
+    lower = []
+    for point in reversed(points):
+        while len(lower) >= 2 and lower[-2].orient(lower[-1], point) >= 0:
+            lower.pop()
+        lower.append(point)
+    lower.pop()
+
+    return lower + upper
